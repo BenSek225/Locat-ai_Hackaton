@@ -1,23 +1,22 @@
-import { NextResponse } from 'next/server'
-import { findProperty } from '@/lib/mock-data'
-import { AIProviderError } from '@/lib/ai/schemas'
+import { properties } from '@/lib/mock-data'
 import { getAIProvider } from '@/lib/ai/provider'
+import { AIProviderError } from '@/lib/ai/schemas'
+import { invalidInput, notFound, publicAIError, readJsonBody } from '@/lib/ai/http'
 
 export async function POST(request: Request) {
+  const body = await readJsonBody(request)
+  if (!body || typeof body.propertyId !== 'string' || body.propertyId.length > 80) return invalidInput('Identifiant de logement invalide.')
+  const property = properties.find((item) => item.id === body.propertyId)
+  if (!property) return notFound('Logement introuvable.')
+  const images = property.photos
+    .filter((photo) => typeof photo === 'string' && /^https?:\/\//i.test(photo))
+    .slice(0, 3)
+  if (images.length === 0) return invalidInput('Aucune photo exploitable pour ce logement.')
   try {
-    const body = await request.json()
-    const propertyId = typeof body?.propertyId === 'string' ? body.propertyId : ''
-    const property = findProperty(propertyId)
-    if (!property || property.id !== propertyId) return NextResponse.json({ error: 'Impossible de terminer l’analyse.' }, { status: 404 })
-    const images = property.photos.slice(0, 3)
-    console.info('[Locat AI] Vision request started', { images: images.length })
     const result = await getAIProvider().analyzeProperty({ images })
-    console.info('[Locat AI] Output validated')
-    return NextResponse.json({ result, imageCount: images.length })
+    return Response.json({ result, imageCount: images.length })
   } catch (error) {
-    const code = error instanceof AIProviderError ? error.code : 'provider_error'
-    console.error(`[Locat AI] Provider error: ${code}`)
-    const message = code === 'quota_exceeded' || code === 'rate_limited' ? 'Locat AI n’est momentanément pas disponible. Réessayez plus tard.' : 'Impossible de terminer l’analyse.'
-    return NextResponse.json({ error: message, code }, { status: error instanceof AIProviderError ? error.status : 500 })
+    if (!(error instanceof AIProviderError)) console.error('[Locat AI] Unexpected analysis failure')
+    return publicAIError(error, 'Locat AI n’a pas pu terminer l’analyse pour le moment. Réessayez.')
   }
 }
