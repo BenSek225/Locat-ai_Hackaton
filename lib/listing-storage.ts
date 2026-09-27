@@ -1,6 +1,7 @@
 'use client'
 
-import { properties, type Property } from '@/lib/mock-data'
+import { type Property } from '@/lib/mock-data'
+import { getProperties, getProperty } from '@/lib/property-storage'
 
 export type ListingStatus = 'draft' | 'generated' | 'published' | 'unpublished'
 
@@ -31,7 +32,7 @@ const STORAGE_KEY = 'locat-listings-v1'
 const isBrowser = () => typeof window !== 'undefined'
 
 function sourceProperty(propertyId: string): Property | undefined {
-  return properties.find((property) => property.id === propertyId)
+  return getProperty(propertyId)
 }
 
 function normalize(value: unknown): Listing | null {
@@ -99,7 +100,7 @@ export function publishListing(propertyId: string, content: Pick<Listing, 'title
 export function findStoredListing(id: string): Listing | null {
   const stored = readListings().find((listing) => listing.id === id && listing.is_public && listing.status === 'published')
   if (stored) return stored
-  const property = properties.find((item) => item.isPublic && (item.id === id || `listing-${item.id}` === id))
+  const property = getProperties().find((item) => item.isPublic && (item.id === id || `listing-${item.id}` === id))
   return property ? seededPublicListing(property) : null
 }
 
@@ -110,7 +111,7 @@ export function findPropertyListing(propertyId: string): Listing | null {
 export function getPublicListings(): Listing[] {
   const stored = readListings().filter((listing) => listing.is_public && listing.status === 'published')
   const storedPropertyIds = new Set(stored.map((listing) => listing.propertyId))
-  return [...stored, ...properties.filter((property) => property.isPublic && !storedPropertyIds.has(property.id)).map(seededPublicListing)]
+  return [...stored, ...getProperties().filter((property) => property.isPublic && !storedPropertyIds.has(property.id)).map(seededPublicListing)]
 }
 
 export function removeListingStorage() {

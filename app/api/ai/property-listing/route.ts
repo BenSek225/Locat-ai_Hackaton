@@ -1,4 +1,4 @@
-import { properties } from '@/lib/mock-data'
+import { getProperty } from '@/lib/property-storage'
 import { getAIProvider } from '@/lib/ai/provider'
 import { AIProviderError, validatePropertyAnalysis } from '@/lib/ai/schemas'
 import { invalidInput, notFound, publicAIError, readJsonBody } from '@/lib/ai/http'
@@ -6,7 +6,7 @@ import { invalidInput, notFound, publicAIError, readJsonBody } from '@/lib/ai/ht
 export async function POST(request: Request) {
   const body = await readJsonBody(request)
   if (!body || typeof body.propertyId !== 'string' || body.propertyId.length > 80) return invalidInput('Identifiant de logement invalide.')
-  const property = properties.find((item) => item.id === body.propertyId)
+  const property = getProperty(body.propertyId)
   if (!property) return notFound('Logement introuvable.')
   let analysis
   try { analysis = validatePropertyAnalysis(body.analysis) } catch { return invalidInput('Les observations visuelles sont invalides.') }

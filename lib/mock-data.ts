@@ -5,16 +5,16 @@ export const photos = ['https://images.unsplash.com/photo-1600607687920-4e2a09cf
 export const properties: Property[] = [
  {id:'a02',numero:'A02',type:'2_pieces',surface:55,rent:250000,status:'libre',description:'Un appartement lumineux et traversant, idéal pour un couple. Profitez d’une cuisine ouverte, d’un balcon et d’une belle lumière naturelle.',isPublic:false,meuble:false,photos,structure:'Résidence Les Palmiers',commune:'Cocody'},
  {id:'a01',numero:'A01',type:'studio',surface:32,rent:180000,status:'occupe',description:'Studio fonctionnel au calme.',isPublic:false,meuble:false,photos:[photos[1]],structure:'Résidence Les Palmiers',commune:'Cocody',tenant:'Jean Kouassi'},
- {id:'b03',numero:'B03',type:'3_pieces',surface:78,rent:420000,status:'occupe',description:'Grand appartement familial.',isPublic:false,meuble:true,photos:[photos[2]],structure:'Cour familiale Bamba',commune:'Yopougon',tenant:'Marie N\'Guessan',lateDays:12},
+ {id:'b03',numero:'B03',type:'3_pieces',surface:78,rent:420000,status:'occupe',description:'Grand appartement familial.',isPublic:false,meuble:true,photos:[photos[2]],structure:'Cour familiale Bamba',commune:'Yopougon',tenant:'Marie N\'Guessan',lateDays:30},
  {id:'b01',numero:'B01',type:'studio',surface:28,rent:150000,status:'libre',description:'Studio neuf avec cour intérieure.',isPublic:true,meuble:false,photos:[photos[0]],structure:'Cour familiale Bamba',commune:'Yopougon'},
  {id:'h04',numero:'04',type:'villa',surface:140,rent:750000,status:'occupe',description:'Villa moderne avec jardin.',isPublic:false,meuble:false,photos:[photos[1]],structure:'Résidence Horizon',commune:'Marcory',tenant:'Paul Yao'},
  {id:'h02',numero:'02',type:'2_pieces',surface:60,rent:290000,status:'libre',description:'Deux pièces calme et sécurisé.',isPublic:true,meuble:true,photos:[photos[2]],structure:'Résidence Horizon',commune:'Marcory'},
 ]
 export const reminders: Reminder[] = [
- {id:'r1',tenant:'Jean Kouassi',property:'A02 · Résidence Les Palmiers',rent:250000,status:'retard',lateDays:12},
+ {id:'r1',tenant:'Jean Kouassi',property:'A01 · Résidence Les Palmiers',rent:180000,status:'a_jour',lateDays:0},
  {id:'r2',tenant:'Marie N\'Guessan',property:'B03 · Cour familiale Bamba',rent:420000,status:'retard',lateDays:30},
  {id:'r3',tenant:'Paul Yao',property:'04 · Résidence Horizon',rent:750000,status:'a_jour',lateDays:0},
- {id:'r4',tenant:'Awa Diarra',property:'A01 · Résidence Les Palmiers',rent:180000,status:'a_jour',lateDays:0},
+ {id:'r4',tenant:'Awa Diarra',property:'A02 · Résidence Les Palmiers',rent:250000,status:'a_jour',lateDays:0},
  {id:'r5',tenant:'Koffi Adjoua',property:'B01 · Cour familiale Bamba',rent:150000,status:'a_jour',lateDays:0},
  {id:'r6',tenant:'Nathalie N\'Guessan',property:'02 · Résidence Horizon',rent:290000,status:'a_jour',lateDays:0},
 ]
