@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Bell, Brain, Building2, CalendarDays, Check, ChevronRight, CircleAlert, Eye, Home, Menu, Search, Sparkles, WalletCards, X } from 'lucide-react'
+import { Bell, Brain, Building2, CalendarDays, Check, ChevronRight, CircleAlert, Eye, Home, Menu, MessageCircle, Search, Sparkles, WalletCards, X } from 'lucide-react'
 import { aiAnalysis, defaultListing, formatCfa, reminders, typeLabels, type Property, type Reminder } from '@/lib/mock-data'
 import { addProperty, getProperties, getProperty } from '@/lib/property-storage'
 import { findPropertyListing, findStoredListing, getPublicListings, publishListing, type Listing } from '@/lib/listing-storage'
@@ -10,7 +10,7 @@ import { findPropertyListing, findStoredListing, getPublicListings, publishListi
 // Photos démo disponibles pour nouveaux logements
 const DEMO_PHOTOS = [
   'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800',
-  'https://images.unsplash.com/photo-1502672260066-6bc357c4ee12?w=800',
+  'https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800',
   'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800',
   'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800',
 ]
@@ -47,7 +47,30 @@ export function Logements(){
   const [showForm,setShowForm]=useState(false)
   // 🔴 P0.2 - Sélection de photos démo
   const [selectedPhotos, setSelectedPhotos] = useState<string[]>([])
+  const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([])
   const router=useRouter()
+
+  useEffect(()=>{
+    try { setUploadedPhotos(JSON.parse(sessionStorage.getItem('locat-session-photos') || '[]')) } catch { setUploadedPhotos([]) }
+  },[])
+
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []).filter(file => file.type.startsWith('image/'))
+    if (!files.length) return
+    Promise.all(files.map(file => new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(String(reader.result))
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    }))).then(newPhotos => {
+      setUploadedPhotos(previous => {
+        const next = [...previous, ...newPhotos]
+        sessionStorage.setItem('locat-session-photos', JSON.stringify(next))
+        return next
+      })
+      event.target.value = ''
+    })
+  }
   
   useEffect(()=>setItems(getProperties()),[])
   
@@ -72,7 +95,7 @@ export function Logements(){
         description:String(data.get('description')||''),
         isPublic:false,
         meuble:data.get('meuble')==='on',
-        photos:selectedPhotos.length > 0 ? selectedPhotos : DEMO_PHOTOS.slice(0, 2), // 🔴 P0.2 - Utiliser photos sélectionnées
+        photos:selectedPhotos.length > 0 ? selectedPhotos : uploadedPhotos.length > 0 ? uploadedPhotos : DEMO_PHOTOS.slice(0, 2), // Photos démo ou importées de la session
         structure:String(data.get('structure')||''),
         commune:String(data.get('commune')||'')
       })
@@ -85,7 +108,7 @@ export function Logements(){
     }
   }
   
-  return <Shell><section className="page-head row"><div><p className="eyebrow">PORTEFEUILLE IMMOBILIER</p><h1>Logements</h1><p>{items.length} logements · {items.filter(p=>p.status==='occupe').length} occupés · {items.filter(p=>p.status==='libre').length} libres</p></div><button className="primary" onClick={()=>setShowForm(true)}><Home/> Ajouter un logement</button></section><div className="toolbar"><div className="search"><Search/><input aria-label="Rechercher" placeholder="Rechercher un logement" value={query} onChange={e=>setQuery(e.target.value)}/></div><div className="tabs">{['Tous','Libres','Occupés'].map(f=><button className={filter===f?'selected':''} onClick={()=>setFilter(f)} key={f}>{f}</button>)}</div></div>{list.length===0?<div className="empty-state"><h2>{items.length?'Aucun logement correspondant':'Aucun logement'}</h2><button className="primary" onClick={()=>setShowForm(true)}>Ajouter votre premier logement</button></div>:<div className="property-grid">{list.map(p=><PropertyCard p={p} key={p.id}/>)}</div>}{showForm&&<div className="overlay" onClick={e=>e.target===e.currentTarget&&setShowForm(false)}><form className="reminder-panel" onSubmit={save} style={{maxHeight:'90vh',overflowY:'auto'}}><button type="button" className="close" onClick={()=>setShowForm(false)} aria-label="Fermer"><X/></button><p className="eyebrow">NOUVEAU LOGEMENT</p><h2>Ajouter un logement</h2><label>Référence<input name="numero" required placeholder="C12"/></label><label>Type<select name="type" defaultValue="studio"><option value="studio">Studio</option><option value="2_pieces">2 pièces</option><option value="3_pieces">3 pièces</option><option value="villa">Villa</option></select></label><label>Surface (m²)<input name="surface" type="number" min="1" required/></label><label>Loyer mensuel<input name="rent" type="number" min="1" required/></label><label>Commune<input name="commune" required placeholder="Cocody"/></label><label>Structure<input name="structure" required placeholder="Résidence Test"/></label><label>Description<textarea name="description" minLength={10} required/></label><label><input name="meuble" type="checkbox"/> Meublé</label><div style={{marginTop:'1rem'}}><label style={{display:'block',marginBottom:'0.5rem'}}>Photos du logement (sélectionnez 1 à 4)</label><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'0.5rem'}}>{DEMO_PHOTOS.map((photo,i)=><label key={photo} style={{display:'flex',alignItems:'center',gap:'0.5rem',padding:'0.5rem',border:selectedPhotos.includes(photo)?'2px solid var(--primary)':'1px solid #ddd',borderRadius:'4px',cursor:'pointer'}}><input type="checkbox" checked={selectedPhotos.includes(photo)} onChange={()=>togglePhoto(photo)}/><img src={photo} alt={`Photo ${i+1}`} style={{width:'60px',height:'60px',objectFit:'cover',borderRadius:'4px'}}/><span>Photo {i+1}</span></label>)}</div><small style={{display:'block',marginTop:'0.5rem',color:'#666'}}>{selectedPhotos.length} photo{selectedPhotos.length>1?'s':''} sélectionnée{selectedPhotos.length>1?'s':''}</small></div><button className="primary" type="submit" style={{marginTop:'1rem'}}>Créer le logement</button></form></div>}</Shell>
+  return <Shell><section className="page-head row"><div><p className="eyebrow">PORTEFEUILLE IMMOBILIER</p><h1>Logements</h1><p>{items.length} logements · {items.filter(p=>p.status==='occupe').length} occupés · {items.filter(p=>p.status==='libre').length} libres</p></div><button className="primary" onClick={()=>setShowForm(true)}><Home/> Ajouter un logement</button></section><div className="toolbar"><div className="search"><Search/><input aria-label="Rechercher" placeholder="Rechercher un logement" value={query} onChange={e=>setQuery(e.target.value)}/></div><div className="tabs">{['Tous','Libres','Occupés'].map(f=><button className={filter===f?'selected':''} onClick={()=>setFilter(f)} key={f}>{f}</button>)}</div></div>{list.length===0?<div className="empty-state"><h2>{items.length?'Aucun logement correspondant':'Aucun logement'}</h2><button className="primary" onClick={()=>setShowForm(true)}>Ajouter votre premier logement</button></div>:<div className="property-grid">{list.map(p=><PropertyCard p={p} key={p.id}/>)}</div>}{showForm&&<div className="overlay" onClick={e=>e.target===e.currentTarget&&setShowForm(false)}><form className="reminder-panel" onSubmit={save} style={{maxHeight:'90vh',overflowY:'auto'}}><button type="button" className="close" onClick={()=>setShowForm(false)} aria-label="Fermer"><X/></button><p className="eyebrow">NOUVEAU LOGEMENT</p><h2>Ajouter un logement</h2><label>Référence<input name="numero" required placeholder="C12"/></label><label>Type<select name="type" defaultValue="studio"><option value="studio">Studio</option><option value="2_pieces">2 pièces</option><option value="3_pieces">3 pièces</option><option value="villa">Villa</option></select></label><label>Surface (m²)<input name="surface" type="number" min="1" required/></label><label>Loyer mensuel<input name="rent" type="number" min="1" required/></label><label>Commune<input name="commune" required placeholder="Cocody"/></label><label>Structure<input name="structure" required placeholder="Résidence Test"/></label><label>Description<textarea name="description" minLength={10} required/></label><label><input name="meuble" type="checkbox"/> Meublé</label><div style={{marginTop:'1rem'}}><label style={{display:'block',marginBottom:'0.5rem'}}>Photos du logement (sélectionnez 1 à 4)</label><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'0.5rem'}}>{DEMO_PHOTOS.map((photo,i)=><label key={photo} style={{display:'flex',alignItems:'center',gap:'0.5rem',padding:'0.5rem',border:selectedPhotos.includes(photo)?'2px solid var(--primary)':'1px solid #ddd',borderRadius:'4px',cursor:'pointer'}}><input type="checkbox" checked={selectedPhotos.includes(photo)} onChange={()=>togglePhoto(photo)}/><img src={photo} alt={`Photo ${i+1}`} style={{width:'60px',height:'60px',objectFit:'cover',borderRadius:'4px'}}/><span>Photo {i+1}</span></label>)}</div><small style={{display:'block',marginTop:'0.5rem',color:'#666'}}>{selectedPhotos.length} photo{selectedPhotos.length>1?'s':''} sélectionnée{selectedPhotos.length>1?'s':''}</small></div><button className="primary" type="submit" style={{marginTop:'1rem'}}>Créer le logement</button><div className="upload-zone"><strong>Photos du logement</strong><span>Ajoutez vos propres images : elles resteront disponibles pendant cette session et pourront être analysées par Locat AI.</span><input type="file" className="photo-upload-input" style={{display:'block',width:'100%',minHeight:112,padding:'28px 18px',border:'2px dashed #f6b27c',borderRadius:16,background:'#fffaf5',color:'var(--muted)',cursor:'pointer',textAlign:'center'}} accept="image/*" multiple onChange={handlePhotoUpload}/><div className="photo-options">{[...DEMO_PHOTOS,...uploadedPhotos].map((photo,index)=><button type="button" key={`${photo}-${index}`} className={`photo-option ${selectedPhotos.includes(photo)?'selected':''}`} onClick={()=>togglePhoto(photo)}><img src={photo} alt={`Photo ${index+1}`}/></button>)}</div></div></form></div>}</Shell>
 }
 
 export function PropertyDetail({id}:{id:string}){
@@ -267,27 +290,18 @@ export function PublicDetail({id}:{id:string}){
   
   // 🔴 P0.6 - Fonction envoi contact
   const handleContact = () => {
-    try {
-      const contacts = JSON.parse(localStorage.getItem('locat-contact-requests') || '[]')
-      contacts.push({
-        ...contactForm,
-        listingId: id,
-        propertyId: listing.propertyId,
-        date: new Date().toISOString()
-      })
-      localStorage.setItem('locat-contact-requests', JSON.stringify(contacts))
-      setContactSent(true)
+    if (!contactForm.name || !contactForm.phone || contactForm.message.trim().length < 10) return
+    const message = `Bonjour, je suis ${contactForm.name}. Je suis intéressé(e) par l'annonce « ${listing.title} ».\n\n${contactForm.message}\n\nMon téléphone : ${contactForm.phone}`
+    window.open(`https://wa.me/2250710504007?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer')
+    setContactSent(true)
       setTimeout(() => {
         setShowContact(false)
         setContactSent(false)
         setContactForm({name:'',phone:'',message:''})
       }, 2000)
-    } catch (error) {
-      alert('Impossible d\'enregistrer votre demande.')
-    }
   }
   
-  return <Shell publicView><Link href="/annonces" className="back">← Toutes les annonces</Link><div className="public-detail"><div className="public-hero-image"><img src={p.photos[0]} alt={listing.title}/></div><div className="public-copy"><p className="eyebrow">{p.structure} · {p.commune}</p><h1>{listing.title}</h1><strong className="big-rent">{formatCfa(listing.price)} <small>/ mois</small></strong><div className="facts"><span>{p.surface} m²</span><span>{typeLabels[p.type]}</span><span>{p.meuble?'Meublé':'Non meublé'}</span></div><h2>Description</h2><p>{listing.description}</p><h2>Points forts</h2><div className="highlight-pills">{listing.highlights.map(x=><Badge tone="success" key={x}>{x}</Badge>)}</div><button className="primary contact" onClick={()=>setShowContact(true)}>Contacter le gestionnaire</button><button className="ai-accordion" onClick={()=>setShow(!show)}><Sparkles/> Voir l'analyse Locat AI <ChevronRight/></button>{show&&<div className="public-analysis"><b>Photos analysées</b><span>{p.photos.length} photo{p.photos.length>1?'s':''} · Observations visibles</span><b>Éléments incertains</b><span>État exact des murs</span></div>}</div></div>{showContact&&<div className="overlay" onClick={e=>e.target===e.currentTarget&&setShowContact(false)}><div className="reminder-panel"><button className="close" onClick={()=>setShowContact(false)} aria-label="Fermer"><X/></button><p className="eyebrow">CONTACT GESTIONNAIRE</p><h2>Envoyer une demande</h2>{!contactSent?<><label>Votre nom<input value={contactForm.name} onChange={e=>setContactForm({...contactForm,name:e.target.value})} required/></label><label>Téléphone<input value={contactForm.phone} onChange={e=>setContactForm({...contactForm,phone:e.target.value})} required/></label><label>Message<textarea value={contactForm.message} onChange={e=>setContactForm({...contactForm,message:e.target.value})} minLength={10} required/></label><button className="primary" onClick={handleContact} disabled={!contactForm.name||!contactForm.phone||!contactForm.message||contactForm.message.length<10}>Envoyer</button></>:<div style={{textAlign:'center',padding:'2rem'}}><Check style={{width:'48px',height:'48px',color:'var(--success)',margin:'0 auto 1rem'}}/><h3>Demande enregistrée</h3><p>Le gestionnaire vous contactera prochainement.</p></div>}</div></div>}</Shell>
+  return <Shell publicView><Link href="/annonces" className="back">← Toutes les annonces</Link><div className="public-detail"><div className="public-hero-image"><img src={p.photos[0]} alt={listing.title}/></div><div className="public-copy"><p className="eyebrow">{p.structure} · {p.commune}</p><h1>{listing.title}</h1><strong className="big-rent">{formatCfa(listing.price)} <small>/ mois</small></strong><div className="facts"><span>{p.surface} m²</span><span>{typeLabels[p.type]}</span><span>{p.meuble?'Meublé':'Non meublé'}</span></div><h2>Description</h2><p>{listing.description}</p><h2>Points forts</h2><div className="highlight-pills">{listing.highlights.map(x=><Badge tone="success" key={x}>{x}</Badge>)}</div><button className="primary contact" onClick={()=>setShowContact(true)}>Contacter le gestionnaire</button><button className="ai-accordion" onClick={()=>setShow(!show)}><Sparkles/> Voir l'analyse Locat AI <ChevronRight/></button>{show&&<div className="public-analysis"><b>Photos analysées</b><span>{p.photos.length} photo{p.photos.length>1?'s':''} · Observations visibles</span><b>Éléments incertains</b><span>État exact des murs</span></div>}</div></div>{showContact&&<div className="overlay" onClick={e=>e.target===e.currentTarget&&setShowContact(false)}><div className="reminder-panel contact-panel"><div className="contact-panel-hero"><span className="contact-panel-icon"><MessageCircle/></span><div><p className="eyebrow">CONTACT DIRECT</p><h2>Écrire au gestionnaire</h2><p>Votre message sera ouvert dans WhatsApp.</p></div></div><button className="close" onClick={()=>setShowContact(false)} aria-label="Fermer"><X/></button><p className="eyebrow">CONTACT GESTIONNAIRE</p><h2>Envoyer une demande</h2>{!contactSent?<><label>Votre nom<input value={contactForm.name} onChange={e=>setContactForm({...contactForm,name:e.target.value})} required/></label><label>Téléphone<input value={contactForm.phone} onChange={e=>setContactForm({...contactForm,phone:e.target.value})} required/></label><label>Message<textarea value={contactForm.message} onChange={e=>setContactForm({...contactForm,message:e.target.value})} minLength={10} required/></label><button className="primary" onClick={handleContact} disabled={!contactForm.name||!contactForm.phone||!contactForm.message||contactForm.message.length<10}>Envoyer</button></>:<div style={{textAlign:'center',padding:'2rem'}}><Check style={{width:'48px',height:'48px',color:'var(--success)',margin:'0 auto 1rem'}}/><h3>Demande enregistrée</h3><p>Le gestionnaire vous contactera prochainement.</p></div>}</div></div>}</Shell>
 }
 
 export default function Page(){
