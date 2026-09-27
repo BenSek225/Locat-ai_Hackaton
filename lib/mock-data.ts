@@ -13,8 +13,8 @@ export const properties: Property[] = [
 export const reminders: Reminder[] = [
  {id:'r1',tenant:'Jean Kouassi',property:'A01 · Résidence Les Palmiers',rent:180000,status:'a_jour',lateDays:0},
  {id:'r2',tenant:'Marie N\'Guessan',property:'B03 · Cour familiale Bamba',rent:420000,status:'retard',lateDays:30},
- {id:'r3',tenant:'Paul Yao',property:'04 · Résidence Horizon',rent:750000,status:'a_jour',lateDays:0},
- {id:'r4',tenant:'Awa Diarra',property:'A02 · Résidence Les Palmiers',rent:250000,status:'a_jour',lateDays:0},
+ {id:'r3',tenant:'Paul Yao',property:'04 · Résidence Horizon',rent:750000,status:'retard',lateDays:12},
+ {id:'r4',tenant:'Awa Diarra',property:'A02 · Résidence Les Palmiers',rent:250000,status:'retard',lateDays:8},
  {id:'r5',tenant:'Koffi Adjoua',property:'B01 · Cour familiale Bamba',rent:150000,status:'a_jour',lateDays:0},
  {id:'r6',tenant:'Nathalie N\'Guessan',property:'02 · Résidence Horizon',rent:290000,status:'a_jour',lateDays:0},
 ]
