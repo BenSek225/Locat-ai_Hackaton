@@ -22,5 +22,5 @@ export const typeLabels: Record<HousingType,string> = {studio:'Studio','2_pieces
 export const formatCfa = (n:number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA'
 export const findProperty = (id:string) => properties.find(p=>p.id===id) ?? properties[0]
 export const findListing = (id:string) => properties.find(p=>p.id===id && p.isPublic) ?? properties.find(p=>p.isPublic)!
-export const aiAnalysis = { visibleFeatures:['Salon lumineux','Cuisine ouverte','Balcon visible','Sol carrelé'], uncertainElements:['État exact des murs'] }
+export const aiAnalysis = { detectedSpaces:['Salon','Cuisine'], visibleFeatures:['Salon lumineux','Cuisine ouverte','Balcon visible','Sol carrelé'], uncertainElements:['État exact des murs'] }
 export const defaultListing = { title:'2 pièces lumineux à Cocody', description:'Découvrez ce bel appartement de 2 pièces situé au cœur de Cocody. Baigné de lumière naturelle, il propose une cuisine ouverte, un salon agréable et un balcon visible. Un cadre de vie pratique et chaleureux dans une résidence bien située.', highlights: aiAnalysis.visibleFeatures.slice(0,3), warnings:['État des murs non déterminé avec certitude'] }
