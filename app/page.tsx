@@ -253,7 +253,10 @@ export function PublicDetail({id}:{id:string}){
   const [contactForm, setContactForm] = useState({name:'',phone:'',message:''})
   const [contactSent, setContactSent] = useState(false)
   
-  useEffect(()=>{setListing(findStoredListing(id))},[id])
+  useEffect(()=>{
+    const stored = findStoredListing(id)
+    setListing(stored)
+  },[id])
   
   if(!listing){
     return <Shell publicView><div className="empty-state"><h2>Annonce introuvable</h2><Link href="/annonces" className="primary">Retour aux annonces</Link></div></Shell>
