@@ -133,12 +133,12 @@ export function PropertyDetail({id}:{id:string}){
           body:JSON.stringify({propertyId:id, property: p})
         })
         const payload=await response.json()
-        if(!response.ok)throw new Error(payload.error||'Impossible de terminer l'analyse.')
+        if(!response.ok)throw new Error(payload.error||'Impossible de terminer l\'analyse.')
         setVision(payload.result)
         setImageCount(payload.imageCount || p.photos.length)
         setStep('analysis')
       }catch(error){
-        setVisionError(error instanceof Error?error.message:'Impossible de terminer l'analyse.')
+        setVisionError(error instanceof Error?error.message:'Impossible de terminer l\'analyse.')
         setStep('idle')
       }
     } else if(next==='generating'){
@@ -152,14 +152,14 @@ export function PropertyDetail({id}:{id:string}){
           body:JSON.stringify({propertyId:id, property: p, analysis:vision})
         })
         const payload=await response.json()
-        if(!response.ok)throw new Error(payload.error||'Impossible de rédiger l'annonce.')
+        if(!response.ok)throw new Error(payload.error||'Impossible de rédiger l\'annonce.')
         setTitle(payload.result.title)
         setDescription(payload.result.description)
         setHighlights(payload.result.highlights)
         setWarnings(payload.result.warnings)
         setStep('listing')
       }catch(error){
-        setVisionError(error instanceof Error?error.message:'Impossible de rédiger l'annonce.')
+        setVisionError(error instanceof Error?error.message:'Impossible de rédiger l\'annonce.')
         setStep('analysis')
       }finally{
         setIsGenerating(false)
@@ -173,9 +173,9 @@ export function PropertyDetail({id}:{id:string}){
 function Info({label,value}:{label:string;value:string}){return <div><span>{label}</span><b>{value}</b></div>}
 
 function AiWorkflow({step,property,title,setTitle,description,setDescription,vision,imageCount,highlights,warnings,onGenerate,onPublish}:{step:string;property:Property;title:string;setTitle:(x:string)=>void;description:string;setDescription:(x:string)=>void;vision:{detectedSpaces:string[];visibleFeatures:string[];uncertainElements:string[]};imageCount:number;highlights:string[];warnings:string[];onGenerate:()=>void;onPublish:()=>void}){
-  if(step==='analyzing'||step==='generating')return <section className="ai-processing"><div className="scan-orb"><Sparkles/></div><div><p className="eyebrow">LOCAT AI · {step==='analyzing'?'VISION':'RÉDACTION'}</p><h2>{step==='analyzing'?'Analyse des photos...':'Création de votre annonce...'}</h2><p>{step==='analyzing'?'Les images sont examinées pour identifier les éléments visibles.':'Analyse des informations du logement · Synthèse des observations · Rédaction de l'annonce'}</p></div><div className="shimmer"><i/><i/><i/></div></section>
+  if(step==='analyzing'||step==='generating')return <section className="ai-processing"><div className="scan-orb"><Sparkles/></div><div><p className="eyebrow">LOCAT AI · {step==='analyzing'?'VISION':'RÉDACTION'}</p><h2>{step==='analyzing'?'Analyse des photos...':'Création de votre annonce...'}</h2><p>{step==='analyzing'?'Les images sont examinées pour identifier les éléments visibles.':'Analyse des informations du logement · Synthèse des observations · Rédaction de l\'annonce'}</p></div><div className="shimmer"><i/><i/><i/></div></section>
   
-  return <section className="ai-result"><div className="ai-result-head"><div><p className="eyebrow">LOCAT AI VISION</p><h2>{step==='analysis'?'Analyse terminée':'Annonce générée'}</h2></div><Badge tone="ai-badge">AI</Badge></div>{step==='analysis'?<>{vision.detectedSpaces.length>0&&<div className="observations"><b>Espaces détectés</b>{vision.detectedSpaces.map(x=><span key={x}><Check/> {x}</span>)}</div>}{vision.visibleFeatures.length>0&&<div className="observations"><b>Éléments visibles</b>{vision.visibleFeatures.map(x=><span key={x}><Check/> {x}</span>)}</div>}{vision.uncertainElements.length>0&&<div className="observations"><b>Incertitudes</b>{vision.uncertainElements.map(x=><span className="uncertain" key={x}><CircleAlert/> {x}</span>)}</div>}<div className="analysis-foot"><span>{imageCount} photo{imageCount>1?'s':''} analysée{imageCount>1?'s':''} · {vision.detectedSpaces.length+vision.visibleFeatures.length+vision.uncertainElements.length} observations</span><b>Observations visuelles</b></div><p className="disclaimer">Les observations sont basées uniquement sur les éléments visibles dans les photos.</p><button className="primary" onClick={onGenerate}>Générer l'annonce <ChevronRight/></button></>:<div className="listing-editor"><label htmlFor="listing-title">Titre</label><input id="listing-title" value={title} onChange={e=>setTitle(e.target.value)}/><label htmlFor="listing-description">Description</label><textarea id="listing-description" value={description} onChange={e=>setDescription(e.target.value)}/><div className="listing-facts"><b>Caractéristiques</b><span>{typeLabels[property.type]} · {property.surface} m² · {formatCfa(property.rent)} / mois · {property.meuble?'Meublé':'Non meublé'} · {property.commune}</span></div><div className="highlight-pills">{highlights.map(x=><Badge key={x} tone="success">{x}</Badge>)}</div>{warnings.length>0&&<p className="warning"><CircleAlert/> {warnings[0]}</p>}<div className="editor-actions"><button className="secondary">Modifier</button><button className="primary" onClick={onPublish}>Publier maintenant <ChevronRight/></button></div></div>}</section>
+  return <section className="ai-result"><div className="ai-result-head"><div><p className="eyebrow">LOCAT AI VISION</p><h2>{step==='analysis'?'Analyse terminée':'Annonce générée'}</h2></div><Badge tone="ai-badge">AI</Badge></div>{step==='analysis'?<>{vision.detectedSpaces.length>0&&<div className="observations"><b>Espaces détectés</b>{vision.detectedSpaces.map(x=><span key={x}><Check/> {x}</span>)}</div>}{vision.visibleFeatures.length>0&&<div className="observations"><b>Éléments visibles</b>{vision.visibleFeatures.map(x=><span key={x}><Check/> {x}</span>)}</div>}{vision.uncertainElements.length>0&&<div className="observations"><b>Incertitudes</b>{vision.uncertainElements.map(x=><span className="uncertain" key={x}><CircleAlert/> {x}</span>)}</div>}<div className="analysis-foot"><span>{imageCount} photo{imageCount>1?'s':''} analysée{imageCount>1?'s':''} · {vision.detectedSpaces.length+vision.visibleFeatures.length+vision.uncertainElements.length} observations</span><b>Observations visuelles</b></div><p className="disclaimer">Les observations sont basées uniquement sur les éléments visibles dans les photos.</p><button className="primary" onClick={onGenerate}>Générer l\'annonce <ChevronRight/></button></>:<div className="listing-editor"><label htmlFor="listing-title">Titre</label><input id="listing-title" value={title} onChange={e=>setTitle(e.target.value)}/><label htmlFor="listing-description">Description</label><textarea id="listing-description" value={description} onChange={e=>setDescription(e.target.value)}/><div className="listing-facts"><b>Caractéristiques</b><span>{typeLabels[property.type]} · {property.surface} m² · {formatCfa(property.rent)} / mois · {property.meuble?'Meublé':'Non meublé'} · {property.commune}</span></div><div className="highlight-pills">{highlights.map(x=><Badge key={x} tone="success">{x}</Badge>)}</div>{warnings.length>0&&<p className="warning"><CircleAlert/> {warnings[0]}</p>}<div className="editor-actions"><button className="secondary">Modifier</button><button className="primary" onClick={onPublish}>Publier maintenant <ChevronRight/></button></div></div>}</section>
 }
 
 export function Loyers(){
@@ -236,7 +236,7 @@ function ReminderPanel({reminder,onClose,onSent}:{reminder:Reminder;onClose:()=>
     }
   }
   
-  return <div className="overlay" onClick={e=>e.target===e.currentTarget&&onClose()}><aside className="reminder-panel" aria-labelledby="reminder-title"><button className="close" onClick={onClose} aria-label="Fermer"><X/></button><p className="eyebrow">LOCAT AI · RELANCE</p><h2 id="reminder-title">Relancer avec Locat AI</h2><div className="context"><b>{reminder.tenant}</b><span>{reminder.property}</span><span>Loyer : {formatCfa(reminder.rent)}</span><span>Retard : {reminder.lateDays} jours</span></div><Badge tone="ai-badge"><Sparkles/> Proposition IA · validation humaine</Badge><label>Ton de la relance</label><div className="tone-toggle">{(['respectueux','ferme'] as const).map(t=><button type="button" className={tone===t?'selected':''} onClick={()=>setTone(t)} key={t}>{t[0].toUpperCase()+t.slice(1)}</button>)}</div>{error&&<p className="danger" role="alert">{error}</p>}{generated&&<><label htmlFor="reminder-message">Message proposé par Locat AI</label><textarea id="reminder-message" value={message} onChange={e=>setMessage(e.target.value)} maxLength={1500}/></>}<div className="panel-actions">{generated&&<button className="secondary" type="button" onClick={generate} disabled={loading}>{loading?'Génération...':'Régénérer'}</button>}{!generated?<button className="primary" type="button" onClick={generate} disabled={loading}>{loading?'Locat AI prépare votre relance...':'Générer avec Locat AI'}</button>:<button className="primary" type="button" onClick={onSent} disabled={loading||!message.trim()}>Valider l'envoi</button>}</div></aside></div>
+  return <div className="overlay" onClick={e=>e.target===e.currentTarget&&onClose()}><aside className="reminder-panel" aria-labelledby="reminder-title"><button className="close" onClick={onClose} aria-label="Fermer"><X/></button><p className="eyebrow">LOCAT AI · RELANCE</p><h2 id="reminder-title">Relancer avec Locat AI</h2><div className="context"><b>{reminder.tenant}</b><span>{reminder.property}</span><span>Loyer : {formatCfa(reminder.rent)}</span><span>Retard : {reminder.lateDays} jours</span></div><Badge tone="ai-badge"><Sparkles/> Proposition IA · validation humaine</Badge><label>Ton de la relance</label><div className="tone-toggle">{(['respectueux','ferme'] as const).map(t=><button type="button" className={tone===t?'selected':''} onClick={()=>setTone(t)} key={t}>{t[0].toUpperCase()+t.slice(1)}</button>)}</div>{error&&<p className="danger" role="alert">{error}</p>}{generated&&<><label htmlFor="reminder-message">Message proposé par Locat AI</label><textarea id="reminder-message" value={message} onChange={e=>setMessage(e.target.value)} maxLength={1500}/></>}<div className="panel-actions">{generated&&<button className="secondary" type="button" onClick={generate} disabled={loading}>{loading?'Génération...':'Régénérer'}</button>}{!generated?<button className="primary" type="button" onClick={generate} disabled={loading}>{loading?'Locat AI prépare votre relance...':'Générer avec Locat AI'}</button>:<button className="primary" type="button" onClick={onSent} disabled={loading||!message.trim()}>Valider l\'envoi</button>}</div></aside></div>
 }
 
 export function Annonces(){
@@ -280,7 +280,7 @@ export function PublicDetail({id}:{id:string}){
         setContactForm({name:'',phone:'',message:''})
       }, 2000)
     } catch (error) {
-      alert('Impossible d'enregistrer votre demande.')
+      alert('Impossible d\'enregistrer votre demande.')
     }
   }
   

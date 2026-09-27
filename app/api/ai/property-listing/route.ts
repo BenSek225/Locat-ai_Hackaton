@@ -33,6 +33,6 @@ export async function POST(request: Request) {
     return Response.json({ result })
   } catch (error) {
     if (!(error instanceof AIProviderError)) console.error('[Locat AI] Unexpected listing failure')
-    return publicAIError(error, 'Locat AI n'a pas pu rédiger l'annonce pour le moment. Réessayez.')
+    return publicAIError(error, 'Locat AI n\'a pas pu rédiger l\'annonce pour le moment. Réessayez.')
   }
 }

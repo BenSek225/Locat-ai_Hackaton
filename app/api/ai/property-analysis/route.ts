@@ -17,6 +17,6 @@ export async function POST(request: Request) {
     return Response.json({ result, imageCount: images.length })
   } catch (error) {
     if (!(error instanceof AIProviderError)) console.error('[Locat AI] Unexpected analysis failure')
-    return publicAIError(error, 'Locat AI n'a pas pu terminer l'analyse pour le moment. Réessayez.')
+    return publicAIError(error, 'Locat AI n\'a pas pu terminer l\'analyse pour le moment. Réessayez.')
   }
 }
